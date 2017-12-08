@@ -30,6 +30,64 @@ read_economic_indicator <- function(filename) {
   return(list(df, meta_df))
 }
 
+#' Extract cell with special text from vector
+#'
+#' Extract cell with special text from vector
+#'
+#' Extract cell with special text from vector
+#'
+#' @param first_col character vector
+#' @param property_text character
+#' @return extracted value
+#' @export
+#' @examples
+#' first_col <- c("Sex: male", "Interval: A", "Group: B")
+#' extract_property(first_col, "Group: ")
+extract_property <- function(first_col, property_text = "Interval: ") {
+  property_cell <- stringr::str_subset(first_col, property_text)
+  n_cells <- length(property_cell)
+  if (n_cells == 1) {
+    property <- stringr::str_match(property_cell, paste0(property_text, "([a-zA-Z0-9 ]+)"))[, 2]
+  } else if (n_cells == 0) {
+    property <- NA
+  } else {
+    property <- stringr::str_match(property_cell[1], paste0(property_text, "([a-zA-Z0-9 ]+)"))[, 2]
+    warning("More than one cell with required text found.")
+  }
+}
+
+
+
+#' Read price history file type
+#'
+#' Read price history file type
+#'
+#' Read price history file type
+#'
+#' @param filename name of file
+#' @return list of two tibbles: with data and meta information
+#' @export
+#' @examples
+#' filename <- "~/Documents/inflation_platon/data/Data2/Price History [29].xlsx"
+#' # two_df <- read_price_history(filename)
+read_price_history <- function(filename) {
+  first_col_df <- readxl::read_excel(filename, range = "A1:A50", col_names = FALSE)
+  first_col <- first_col_df$X__1
+
+  n_skip_lines <- stringr::str_which(first_col, "Exchange Date") - 1
+
+  df <- readxl::read_excel(filename, skip = n_skip_lines)
+
+  meta_df <- tibble::tibble(name_long = first_col[1],
+                    name_short = first_col[3])
+
+  meta_df$interval <- extract_property(first_col, "Interval: ")
+  meta_df$period <- extract_property(first_col, "Period: ")
+  meta_df$conversion <- extract_property(first_col, "Conversion: ")
+
+  return(list(df, meta_df))
+}
+
 
 
 #' Read many economic indicator files
@@ -43,7 +101,7 @@ read_economic_indicator <- function(filename) {
 #' @export
 #' @examples
 #' filenames <- "~/Documents/inflation_platon/data/Data/Economic Indicator_Russia Consumer Prices, Core CPI, Total, Index, DecPY=100_30 Nov 2017.xlsx"
-#' # df_list <- read_economic_indicator(filenames)
+#' # two_df <- read_economic_indicator(filenames)
 read_economic_indicator_files <- function(filenames) {
   all_df <- NULL
   all_meta <- NULL

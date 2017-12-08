@@ -20,5 +20,5 @@ Read many economic indicator files
 }
 \examples{
 filenames <- "~/Documents/inflation_platon/data/Data/Economic Indicator_Russia Consumer Prices, Core CPI, Total, Index, DecPY=100_30 Nov 2017.xlsx"
-# df_list <- read_economic_indicator(filenames)
+# two_df <- read_economic_indicator(filenames)
 }
