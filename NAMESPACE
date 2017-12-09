@@ -2,6 +2,7 @@
 
 export(extract_by_frequency)
 export(extract_property)
+export(guess_frequency)
 export(read_economic_indicator)
 export(read_economic_indicator_files)
 export(read_price_history)

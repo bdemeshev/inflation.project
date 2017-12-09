@@ -22,9 +22,11 @@ read_economic_indicator <- function(filename) {
   meta_df$n_series <- ncol(df) - 1
   meta_df$n_obs <- nrow(df)
   if (meta_df$n_obs > 1) {
-    meta_df$diff_days <- as.numeric(df$Period[1] - df$Period[2])
+    meta_df$diff_days <- abs(round(as.numeric(mean(diff(df$Period)), units = "days")))
+    meta_df$freq <- guess_frequency(df$Period)
   } else {
     meta_df$diff_days <- NA
+    meta_df$freq <- NA
   }
   meta_df$filename <- filename
   return(list(df, meta_df))
@@ -88,7 +90,37 @@ read_price_history <- function(filename) {
   return(list(df, meta_df))
 }
 
-
+#' Guess yearly frequency of dates vector
+#'
+#' Guess yearly frequency of dates vector
+#'
+#' Guess yearly frequency of dates vector
+#'
+#' @param timeline vector of dates
+#' @return integer frequency or NA
+#' @export
+#' @examples
+#' data_vector <- as.Date(c("2017-03-31", "2017-04-30", "2017-05-31"))
+#' guess_frequency(data_vector)
+guess_frequency <- function(timeline) {
+  mean_time_diff <- abs(round(as.numeric(mean(diff(timeline)), units = "days")))
+  if (mean_time_diff == 1) {
+    freq <- 365
+  } else if (mean_time_diff %in% 5:7) {
+    freq <- 52
+  } else if (mean_time_diff %in% 27:31) {
+    freq <- 12
+  } else if (mean_time_diff %in% 88:93) {
+    freq <- 4
+  } else if (mean_time_diff %in% 175:185) {
+    freq <- 2
+  } else if (mean_time_diff %in% 350:366) {
+    freq <- 1
+  } else {
+    freq <- NA
+  }
+  return(freq)
+}
 
 #' Read many economic indicator files
 #'
@@ -115,12 +147,6 @@ read_economic_indicator_files <- function(filenames) {
     all_df <- append(all_df, list(two_df[[1]]))
     all_meta <- dplyr::bind_rows(all_meta, two_df[[2]])
   }
-
-  all_meta <- dplyr::mutate(all_meta,
-      freq = ifelse(diff_days %in% 1:2, 365,
-               ifelse(diff_days %in% 5:7, 52,
-                 ifelse(diff_days %in% 27:31, 12,
-                   ifelse(diff_days %in% 88:93, 4, NA)))))
 
   return(list(all_df, all_meta))
 }
