@@ -11,6 +11,8 @@
 #' filename <- "~/Documents/inflation_platon/data/Data/Economic Indicator_Russia Consumer Prices, Core CPI, Total, Index, DecPY=100_30 Nov 2017.xlsx"
 #' # df_list <- read_economic_indicator(filename)
 read_economic_indicator <- function(filename) {
+  Period <- NULL # dirty hack to calm down R CMD check
+
   df <- readxl::read_excel(filename, skip = 8)
   if (!colnames(df)[1] == "Period") {
     warning("First column name is not equal to 'Period'. Maybe read_excel(file_name, skip = 8) failed :(")
@@ -29,6 +31,7 @@ read_economic_indicator <- function(filename) {
     meta_df$freq <- NA
   }
   meta_df$filename <- filename
+  df <- dplyr::arrange(df, Period)
   return(list(df, meta_df))
 }
 
@@ -168,6 +171,8 @@ read_economic_indicator_files <- function(filenames) {
 #' # all_data <- read_economic_indicator_files(filenames)
 #' # df_monthly <- extract_by_frequency(all_data, freq = 12)
 extract_by_frequency <- function(all_data, freq = 12) {
+  Period <- NULL # dirty hack to calm down R CMD check
+
   all_meta <- all_data[[2]]
   tibble_index <- all_meta$freq == freq
   tibble_index[is.na(tibble_index)] <- FALSE
@@ -177,6 +182,7 @@ extract_by_frequency <- function(all_data, freq = 12) {
   for (df_no in 2:length(df_with_freq)) {
     joined_df <- dplyr::full_join(joined_df, df_with_freq[[df_no]], by = "Period")
   }
+  joined_df <- dplyr::arrange(joined_df, Period)
   return(joined_df)
 }
 
