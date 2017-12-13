@@ -179,8 +179,10 @@ extract_by_frequency <- function(all_data, freq = 12) {
   df_with_freq <- all_data[[1]][tibble_index]
 
   joined_df <- df_with_freq[[1]]
-  for (df_no in 2:length(df_with_freq)) {
-    joined_df <- dplyr::full_join(joined_df, df_with_freq[[df_no]], by = "Period")
+  if (length(df_with_freq) > 1) {
+    for (df_no in 2:length(df_with_freq)) {
+      joined_df <- dplyr::full_join(joined_df, df_with_freq[[df_no]], by = "Period")
+    }
   }
   joined_df <- dplyr::arrange(joined_df, Period)
   return(joined_df)
